@@ -1,0 +1,24 @@
+{
+  "name": "my-monorepo-workspace",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/my-monorepo-workspace/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "my-monorepo-workspace:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "my-monorepo-workspace:build:development"
+        },
+        "production": {
+          "buildTarget": "my-monorepo-workspace:build:production"
+        }
+      }
+    }
+  }
+}
