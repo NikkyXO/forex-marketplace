@@ -60,3 +60,14 @@ It will show tasks that you can run with Nx.
 - [Join the community](https://nx.dev/community)
 - [Subscribe to the Nx Youtube Channel](https://www.youtube.com/@nxdevtools)
 - [Follow us on Twitter](https://twitter.com/nxdevtools)
+
+
+npx create-nx-workspace my-workspace --preset=nest
+npm add --global nx@latest
+nx generate @nx/nest:app apps/my-forex-marketplace
+
+
+nx build apps/my-forex-marketplace
+nx serve apps/my-forex-marketplace
+nx lint apps/my-forex-marketplace
+nx test apps/my-forex-marketplace
