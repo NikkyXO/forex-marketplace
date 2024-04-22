@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package wallet;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+
+service WalletServiceClient {
+  rpc createUserWallet (createWalletPayload) returns (IWalletPayload) {}
+  rpc getUserWallet (getUserWalletRequest) returns (IWalletPayload) {}
+  rpc fundWallet (fundWalletPayload) returns (IWalletPayload) {}
+  rpc transferFundsFromWallet (fundWalletPayload) returns (IWalletPayload) {}
+  rpc transferFundsIntoWallet (fundWalletPayload) returns (IWalletPayload) {}
+
+
+  rpc createTransaction(TransactionCreatePayload) returns (ITransaction) {}
+  rpc getUserTransaction (getUserTransactionRequest) returns (ITransaction) {}
+  rpc checkTransactionwithRef(checkTransactionRequest) returns (ITransaction) {}
+}
+
+message getUserTransactionRequest {
+  string userWalletId = 1;
+  optional TransactionType TransactionType = 2;
+}
+
+message getUserWalletRequest {
+  string userId = 1;
+}
+
+message checkTransactionRequest {
+  string paymentReference = 1;
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER = 0;
+  CREDIT_CARD = 1;
+  BANK_USSD = 2;
+  APP_PAY = 3;
+}
+
+enum TransactionType {
+  DEPOSIT = 0;
+  WITHDRAWAL = 1;
+  TRANSFER = 2;
+  REFUND = 3;
+}
+
+enum PaymentProvider {
+  BANI = 0;
+  PAYSTACK = 1;
+  WALLET_PAY = 2;
+  BANK = 3;
+}
+
+enum TransactionStatus {
+  PENDING = 0;
+  COMPLETED = 1;
+  FAILED = 2;
+
+}
+
+enum SystemPaymentPurpose {
+  FUND_WALLET = 0;
+  FUND_ORDER = 1;
+}
+
+message WalletCreatePayload {
+  string id = 1;
+  string userId = 2;
+  int64 balance = 3;
+  int64 totalCredit = 4;
+  int64 actualSpend = 5;
+  int64  accountNumber = 6;
+}
+
+
+message TransactionCreatePayload {
+  int64 amount = 1;
+  SystemPaymentPurpose paymentPurpose = 2;
+  string userWalletId = 3;
+  int32 exchangeRate = 4;
+  PaymentProvider paymentProvider = 5;
+  string paymentReference = 6;
+  string userId = 7;
+  PaymentMethod paymentMethod = 8;
+  string baseCurrency = 9;
+  TransactionType transactionType = 10;
+  TransactionStatus transactionStatus = 11;
+  optional google.protobuf.StringValue objectId = 12;
+  string accountNumber = 13;
+}
+
+message ITransaction {
+  int64 amount = 1;
+  string paymentPurpose = 2;
+  string userWalletId = 3;
+  int32 exchangeRate = 4;
+  string paymentProvider = 5;
+  string paymentReference = 6;
+  string userId = 7;
+  PaymentMethod paymentMethod = 8;
+  string baseCurrency = 9;
+  string TransactionType = 10;
+  string TransactionStatus = 11;
+}
+
+message fundWalletPayload {
+  int64 amount = 1;
+  PaymentMethod paymentMethod = 2;
+  TransactionStatus transactionStatus = 3;
+  optional string description = 4;
+  PaymentProvider paymentProvider = 5;
+  string paymentReference = 6;
+  string userId = 7;
+}
+
+message createWalletPayload {
+  string userId = 1;
+}
+
+message IWalletPayload {
+  string id = 1;
+  string userId = 2;
+  int64 balance = 3;
+  int64 totalCredit = 4;
+  int64 amount = 5;
+  int64 ActualSpend = 6;
+  int64 accountNumber = 7;
+  google.protobuf.Timestamp  createdAt = 8;
+  google.protobuf.Timestamp updatedAt = 9;
+
+}
+
+message transferWalletFundPayload {
+  int64 amount = 1;
+  int64 account_number = 2;
+  string pin = 3;
+  SystemPaymentPurpose paymentPurpose = 4;
+  optional string description = 5;
+  PaymentProvider paymentProvider = 6;
+  string ref = 7;
+  string userId = 8;
+}
+
+

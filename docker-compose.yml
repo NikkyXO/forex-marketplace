@@ -1,0 +1,117 @@
+version: "3"
+services:
+  auth-api:
+    build:
+      dockerfile: apps/auth-api/Dockerfile
+      target: development
+      context: .
+    command: npm run start:auth-api
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    expose:
+     - 3332
+    ports:
+      - 4010:3332
+      - 9010:9664
+    environment:
+      DATABASE_HOST: db
+      DATABASE_SYNCHRONIZE: 'true'
+
+  api-gateway:
+    build:
+      dockerfile: apps/api-gateway/Dockerfile
+      target: development
+      context: .
+    command: npm run start:api-gateway
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    expose:
+     - 3331
+    ports:
+      - 4020:3331
+      - 9020:9663
+    environment:
+      DATABASE_HOST: db
+      DATABASE_SYNCHRONIZE: 'true'
+
+  order:
+    build:
+      dockerfile: apps/order/Dockerfile
+      target: development
+      context: .
+    command: npm run start:order
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    expose:
+     - 3333
+    ports:
+      - 4030:3333
+      - 9030:9665
+    environment:
+      DATABASE_HOST: db
+      DATABASE_SYNCHRONIZE: 'true'
+
+  wallet:
+    build:
+      dockerfile: apps/wallet/Dockerfile
+      target: development
+      context: .
+    command: npm run start:wallet
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    expose:
+     - 3335
+    ports:
+      - 4040:3335
+      - 9040:9667
+    environment:
+      DATABASE_HOST: db
+      DATABASE_SYNCHRONIZE: 'true'
+
+  rate:
+    build:
+      dockerfile: apps/rate/Dockerfile
+      target: development
+      context: .
+    command: npm run start:rate
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    expose:
+     - 3334
+    ports:
+      - 4050:3334
+      - 9050:9666
+    environment:
+      DATABASE_HOST: db
+      DATABASE_SYNCHRONIZE: 'true'
+
+
+
+
+  db:
+    image: mongo:latest
+    volumes:
+      - './mongodb:/data/db'
+    ports:
+      - "27017:27017"
+    restart: always
+
+networks:
+  default:
+   name: dev_network
+   driver: bridge

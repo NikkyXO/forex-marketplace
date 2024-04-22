@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package order;
+
+import "google/protobuf/timestamp.proto";
+
+
+service OrderServiceClient {
+  rpc createProduct(createProductPayload) returns (createProductResponse) {}
+  rpc getProduct(getProductPayload) returns (createProductResponse) {}
+  rpc deleteProduct(getProductPayload) returns (deleteResponse) {}
+  rpc createUserProduct(addUserProduct) returns (createUserProductResponse) {}
+  rpc getUserProduct(getUserProductPayload) returns (createUserProductResponse) {}
+  rpc removeUserProduct(getUserProductPayload) returns (deleteResponse) {}
+  rpc getAllUserProducts(getAllUserProductsPayload) returns (stream allProductResponse) {}
+  rpc buyAProduct(buyASellerProductPayload) returns (buyASellerProductResponse) {}
+
+  // rpc getAllUserProducts(getAllUserProductsPayload) returns (stream createUserProductResponse) {}
+}
+
+
+message buyASellerProductPayload {
+  string userId = 1;
+  string userProductId = 2;
+  int32 quantity =3;
+  string fromCurrency = 4;
+  string toCurrency = 5;
+
+}
+
+message buyASellerProductResponse {
+  optional string message = 1;
+  optional string error = 2;
+}
+
+
+
+message createUserProductResponse {
+  int64 sellingPrice = 1;
+  string productId = 2;
+  string userId = 3;
+  optional string description = 4;
+  bool product_visibility = 5;
+  google.protobuf.Timestamp  createdAt = 6;
+  google.protobuf.Timestamp updatedAt = 7;
+}
+
+message allProductResponse {
+  repeated createUserProductResponse products = 1;
+}
+
+message createProductPayload {
+  string title = 1;
+  float price = 2;
+  string image = 3;
+}
+
+message deleteResponse {
+  string message = 1;
+}
+
+message createProductResponse {
+  string title = 1;
+  float price = 2;
+  string image = 3;
+  google.protobuf.Timestamp  createdAt = 4;
+  google.protobuf.Timestamp updatedAt = 5;
+}
+
+message addUserProduct {
+  int64 sellingPrice = 1;
+  string productId = 2;
+  string userId = 3;
+  optional string description = 4;
+  bool product_visibility = 5;
+}
+
+message getProductPayload {
+  string productId = 1;
+}
+
+message getUserProductPayload {
+  string productId = 1;
+  string userId = 2;
+}
+
+message addBoughtProductToUserPayload {
+  string productId = 1;
+  string userId = 2;
+}
+
+message getAllUserProductsPayload {
+  string userId = 1;
+}
