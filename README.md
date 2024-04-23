@@ -64,70 +64,8 @@ It will show tasks that you can run with Nx.
 
 
 
-npx create-nx-workspace my-workspace --preset=nest
-npm add --global nx@latest
-nx generate @nx/nest:app apps/my-forex-marketplace
 
 
-nx build user
-nx serve user
-nx lint user
-nx test user
-nx run auth:serve:development
-nx run auth-api:serve:development
-
-nx reset / rm -fr .nx/cache
-
-npx @nestjs/cli
-<!-- nest g library app-library -->
-npx @nestjs/cli g library app-library
-npx @nestjs/cli g library ENVManager
-
-npm install --save @nestjs/typeorm typeorm mongodb
-npm install @nestjs/microservices @grpc/grpc-js
-
-
-https://openexchangerates.org/
-
-https://github.com/typeorm/typeorm/issues/7009
-
-https://github.com/tkssharma/nestjs-microservices/blob/develop/apps/nestjs-http-gateway/src/grpc.controller.ts
-
-
-https://github.com/hellokvn/grpc-nest-auth-svc
-
-git@github.com:NikkyXO/grpc-nest-proto.git
-https://github.com/NikkyXO/grpc-nest-proto
-
-"proto:install": "npm i git+https://github.com/NikkyXO/grpc-nest-proto.git",
-"proto:auth": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/grpc-nest-proto/proto --ts_proto_out=src/auth/ node_modules/grpc-nest-proto/proto/auth.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
-"proto:order": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/grpc-nest-proto/proto --ts_proto_out=src/order/ node_modules/grpc-nest-proto/proto/order.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
-"proto:product": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/grpc-nest-proto/proto --ts_proto_out=src/product/ node_modules/grpc-nest-proto/proto/product.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
-"proto:all": "npm run proto:auth && npm run proto:order && npm run proto:product"
-
-npm run proto:install && npm run proto:all
-
-
-nx run-many --target=service
-
-npm i --save passport-jwt @types/passport-jwt @nestjs/passport passport
-
-
-npm install ts-proto
-
- protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=. apps/auth-api/src/assets/auth.proto
-
- protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=. apps/order/src/assets/order.proto
-
-  protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=. apps/wallet/src/assets/wallet.proto
-
-
- protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=. apps/order/src/assets/wallet.proto
-
- protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=. apps/api-gateway/src/assets/wallet.proto
-
- protoc --plugin=protoc-gen-ts_proto=".\\node_modules\\.bin\\protoc-gen-ts_proto.cmd" --ts_proto_out=.  apps/wallet/src/assets/wallet.proto
-
- nx run-many --target=serve --all --maxParallel=100 
-
- npx kill-port 9229
+ # to run Project
+  - run: docker compose up
+  - swagger documentation at : http://localhost:3331/docs#/auth/GRPCAuthController_registerUser
