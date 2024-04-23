@@ -24,9 +24,12 @@ export class TransactionService {
   }
 
   async createTransaction(data: TransactionCreatePayload) {
-    return this.transactionRepository.create({
-      ...data as any,
-    });
+    console.log({ inService: data });
+    const createData = data as unknown as Transaction
+    const transact = await this.dataSource.getRepository(Transaction).save(createData);
+    console.log({ transact  });
+    return transact
+
   }
 
   async generateReference(): Promise<string> {
@@ -39,7 +42,7 @@ export class TransactionService {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
 
-    return `Cut-${result}-${Date.now()}`;
+    return `APP-${result}-${Date.now()}`;
   }
 
   async getTransaction(data: getUserTransactionRequest) {

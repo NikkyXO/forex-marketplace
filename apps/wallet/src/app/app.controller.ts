@@ -4,7 +4,7 @@ import { Controller } from '@nestjs/common';
 import { UserWallet } from './wallet.entity';
 import { GrpcMethod } from '@nestjs/microservices';
 import { TransactionService } from './services/transaction.service';
-import { checkTransactionRequest, fundWalletPayload, getUserTransactionRequest, getUserWalletRequest, TransactionCreatePayload } from '../assets/wallet';
+import { checkTransactionRequest, createWalletPayload, fundWalletPayload, getUserTransactionRequest, getUserWalletRequest, TransactionCreatePayload } from '../assets/wallet';
 
 @Controller()
 export class AppController {
@@ -21,18 +21,18 @@ export class AppController {
   }
 
   @GrpcMethod('WalletServiceClient', 'createUserWallet')
-  createUserWallet(data: Partial<UserWallet>) {
+  createUserWallet(data: createWalletPayload) {
     return this.appService.createUserWallet(data);
   }
 
   @GrpcMethod('WalletServiceClient', 'fundWallet')
-  fundUserWallet(data: fundWalletPayload) {
-    return this.appService.fundUserWallet(data);
+  async fundUserWallet(data: fundWalletPayload) {
+    return await this.appService.fundUserWallet(data);
   }
 
   @GrpcMethod('WalletServiceClient', 'transferFundsFromWallet')
-  transferFundFromUserWallet(data: fundWalletPayload) {
-    this.appService.transferFundFromUserWallet(data)
+  async transferFundFromUserWallet(data: fundWalletPayload) {
+    return await this.appService.transferFundFromUserWallet(data)
   }
 
   @GrpcMethod('WalletServiceClient', 'transferFundsIntoWallet')
@@ -41,19 +41,20 @@ export class AppController {
   }
 
 
-  @GrpcMethod('wallet', 'createTransaction')
+  @GrpcMethod('WalletServiceClient', 'createTransaction')
   createTransaction(data: TransactionCreatePayload) {
-    this.transactionService.createTransaction(data);
+    console.log({ inClient: data });
+    return this.transactionService.createTransaction(data);
   }
 
 
-  @GrpcMethod('wallet', 'getUserTransaction')
+  @GrpcMethod('WalletServiceClient', 'getUserTransaction')
   getUserTransction(data: getUserTransactionRequest) {
     this.transactionService.getTransaction(data)
   }
 
 
-  @GrpcMethod('wallet', 'checkTransactionwithRef')
+  @GrpcMethod('WalletServiceClient', 'checkTransactionwithRef')
   checkTranscationwithRef(data: checkTransactionRequest) {
     this.transactionService.checkTransactionWithPayRef(data.paymentReference)
   }

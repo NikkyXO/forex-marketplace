@@ -21,10 +21,6 @@ export class AppController {
     return await this.appService.register(payload);
   }
 
-  private createUser(payload: CreateUserDto2) {
-    return { message: 'Hello there'};
-  }
-
 
   @GrpcMethod('AuthServiceClient', 'login')
   private async login(payload: LoginUserDto): Promise<LoginUserResponseDto> {

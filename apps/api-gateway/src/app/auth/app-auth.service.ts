@@ -27,8 +27,6 @@ export class GRPCAuthService implements OnModuleInit {
 
   async registerUser(data: RegisterRequest) {
     const res =  await this.authServiceClient.register(data);
-    const wallet = await lastValueFrom(this.walletServiceClient.createUserWallet({userId: res.userId}) as unknown as  Observable<any>);
-    console.log({ walletInGateway: wallet });
     return res;
   }
 

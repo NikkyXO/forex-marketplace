@@ -44,6 +44,7 @@ import { GRPCProductController } from './order/app-product.controller';
         name: 'order',
         transport: Transport.GRPC,
         options: {
+          url: "127.0.0.1:3333",
           package: 'order',
           protoPath: path.join(__dirname, '/assets/order.proto'),
         },

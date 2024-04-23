@@ -8,12 +8,10 @@ import "google/protobuf/wrappers.proto";
 
 service WalletServiceClient {
   rpc createUserWallet (createWalletPayload) returns (IWalletPayload) {}
-  rpc getUserWallet (getUserWalletRequest) returns (IWalletPayload) {}
+  rpc getUserWallet (getUserWalletRequest) returns (getUserWalletResponse) {}
   rpc fundWallet (fundWalletPayload) returns (IWalletPayload) {}
   rpc transferFundsFromWallet (fundWalletPayload) returns (IWalletPayload) {}
   rpc transferFundsIntoWallet (fundWalletPayload) returns (IWalletPayload) {}
-
-
   rpc createTransaction(TransactionCreatePayload) returns (ITransaction) {}
   rpc getUserTransaction (getUserTransactionRequest) returns (ITransaction) {}
   rpc checkTransactionwithRef(checkTransactionRequest) returns (ITransaction) {}
@@ -27,6 +25,11 @@ message getUserTransactionRequest {
 message getUserWalletRequest {
   string userId = 1;
 }
+
+message getUserWalletResponse {
+  optional IWalletPayload wallet = 1;
+}
+
 
 message checkTransactionRequest {
   string paymentReference = 1;
@@ -68,15 +71,15 @@ enum SystemPaymentPurpose {
 message WalletCreatePayload {
   string id = 1;
   string userId = 2;
-  int64 balance = 3;
-  int64 totalCredit = 4;
-  int64 actualSpend = 5;
-  int64  accountNumber = 6;
+  int32 balance = 3;
+  int32 totalCredit = 4;
+  int32 actualSpend = 5;
+  int32  accountNumber = 6;
 }
 
 
 message TransactionCreatePayload {
-  int64 amount = 1;
+  int32 amount = 1;
   SystemPaymentPurpose paymentPurpose = 2;
   string userWalletId = 3;
   int32 exchangeRate = 4;
@@ -92,7 +95,7 @@ message TransactionCreatePayload {
 }
 
 message ITransaction {
-  int64 amount = 1;
+  int32 amount = 1;
   string paymentPurpose = 2;
   string userWalletId = 3;
   int32 exchangeRate = 4;
@@ -101,12 +104,13 @@ message ITransaction {
   string userId = 7;
   PaymentMethod paymentMethod = 8;
   string baseCurrency = 9;
-  string TransactionType = 10;
-  string TransactionStatus = 11;
+  string transactionType = 10;
+  string transactionStatus = 11;
+  int32 accountNumber = 12;
 }
 
 message fundWalletPayload {
-  int64 amount = 1;
+  int32 amount = 1;
   PaymentMethod paymentMethod = 2;
   TransactionStatus transactionStatus = 3;
   optional string description = 4;
@@ -120,21 +124,21 @@ message createWalletPayload {
 }
 
 message IWalletPayload {
-  string id = 1;
-  string userId = 2;
-  int64 balance = 3;
-  int64 totalCredit = 4;
-  int64 amount = 5;
-  int64 ActualSpend = 6;
-  int64 accountNumber = 7;
-  google.protobuf.Timestamp  createdAt = 8;
-  google.protobuf.Timestamp updatedAt = 9;
+  optional string id = 1;
+  optional string userId = 2;
+  optional int32 balance = 3;
+  optional int32 totalCredit = 4;
+  optional int32 amount = 5;
+  optional int32 ActualSpend = 6;
+  optional int32 accountNumber = 7;
+  optional google.protobuf.Timestamp  createdAt = 8;
+  optional google.protobuf.Timestamp updatedAt = 9;
 
 }
 
 message transferWalletFundPayload {
-  int64 amount = 1;
-  int64 account_number = 2;
+  int32 amount = 1;
+  int32 account_number = 2;
   string pin = 3;
   SystemPaymentPurpose paymentPurpose = 4;
   optional string description = 5;

@@ -9,23 +9,23 @@ export class UserWallet {
   @Column()
   userId: string;
 
-  @Column()
+  @Column({type: 'int',  default: 0 })
   balance: number;
 
-  @Column()
+  @Column({type: 'int',  default: 0 })
   totalCredit: number;
 
-  @Column()
+  @Column({type: 'int',  default: 0 })
   actualSpend: number;
 
-  @Column()
+  @Column({type: 'int'})
   accountNumber: number;
 
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'timestamp', default: null, nullable: true })
+  @Column({  default: null, nullable: true })
   updatedAt: Date;
 
 }

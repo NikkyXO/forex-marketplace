@@ -1,11 +1,20 @@
-
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserWallet } from './wallet.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { fundWalletPayload, getUserWalletRequest } from './../assets/wallet';
+import {
+  createWalletPayload,
+  fundWalletPayload,
+  getUserWalletRequest,
+  getUserWalletResponse,
+} from './../assets/wallet';
 import { TransactionService } from './services/transaction.service';
-import { PaymentMethod, SystemPaymentPurpose, TransactionStatus, TransactionType } from './entities';
+import {
+  PaymentMethod,
+  SystemPaymentPurpose,
+  TransactionStatus,
+  TransactionType,
+} from './entities';
 import { generateTransactionNumber } from './util';
 import { lastValueFrom, Observable } from 'rxjs';
 
@@ -16,25 +25,38 @@ export class AppService {
     private readonly transactionService: TransactionService,
     private readonly dataSource: DataSource,
     @InjectRepository(UserWallet) private userWallet: Repository<UserWallet>
-  ) {}
+  ) {
+  }
 
-  async createUserWallet(data: Partial<UserWallet>) {
-    console.log({data});
+
+
+
+
+  async createUserWallet(data: createWalletPayload) {
+    console.log({ data });
     const walletExists = await this.userWallet.findOne({
       where: { userId: data.userId },
     });
-    console.log({walletExists});
+    console.log({ walletExists });
     if (!walletExists) {
-      const wallet = this.userWallet.create(data);
-      const savedWallet = await this.dataSource.manager.save(wallet);
-      console.log({ savedWallet });
+      const createData = {
+        userId: data.userId,
+        actualSpend: 0,
+        balance: 0,
+        totalCredit: 0,
+      };
+      const wallet = this.dataSource.getRepository(UserWallet).save(createData)
       return wallet;
     }
     return walletExists;
   }
 
-  async getUserWallet({userId}: getUserWalletRequest): Promise<UserWallet> | null {
-    return await this.userWallet.findOne({ where: { userId } });
+  async getUserWallet({
+    userId,
+  }: getUserWalletRequest): Promise<getUserWalletResponse> {
+    const wallet = await this.userWallet.findOne({ where: { userId: userId } });
+    console.log({ walletExists: wallet });
+    return { wallet };
   }
 
   async fundUserWallet(data: fundWalletPayload) {
@@ -46,53 +68,53 @@ export class AppService {
       if (transaction) throw new Error('transaction already used');
     }
 
-    const wallet = await this.getUserWallet({userId: data.userId});
-    if (!wallet) {
+    const userWallet = await this.getUserWallet({ userId: data.userId });
+    if (!userWallet) {
       throw new Error("Wallet not found'");
     }
-    const curr = Number(wallet?.balance);
+    const curr = Number(userWallet.wallet?.balance);
     const total = curr + Number(data.amount);
-    wallet.balance = total;
-    const totalCredited = Number(wallet?.totalCredit);
+    userWallet.wallet.balance = total;
+    const totalCredited = Number(userWallet.wallet?.totalCredit);
     const CurrentTotalCredited = totalCredited + Number(data.amount);
-    wallet.totalCredit = CurrentTotalCredited;
-    await this.dataSource.manager.save(wallet);
+    userWallet.wallet.totalCredit = CurrentTotalCredited;
+    await this.dataSource.manager.save(userWallet.wallet);
     await this.transactionService.createTransaction({
-      ...data as any,
+      ...(data as any),
       paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
-      paymentReference: data.paymentReference ? data.paymentReference: generateTransactionNumber(),
+      paymentReference: data.paymentReference
+        ? data.paymentReference
+        : generateTransactionNumber(),
     });
-    return wallet;
+    return userWallet.wallet;
   }
 
   async transferFundFromUserWallet(data: Partial<fundWalletPayload>) {
-
     try {
-      const wallet = await this.getUserWallet({userId: data.userId})
+      const userWallet = await this.getUserWallet({ userId: data.userId });
 
-      if (!wallet) throw new BadRequestException('Wallet not found');
-      const curr = Number(wallet?.balance);
+      if (!userWallet) throw new BadRequestException('Wallet not found');
+      const curr = Number(userWallet.wallet?.balance);
       if (curr < Number(data.amount))
         throw new BadRequestException('Insufficient funds');
-      if (Number(data.amount) <= 0) throw new BadRequestException('Invalid amount');
+      if (Number(data.amount) <= 0)
+        throw new BadRequestException('Invalid amount');
 
       const currentBalance = curr - Number(data.amount);
-      wallet.balance = currentBalance;
-      wallet.actualSpend += Number(data.amount);
-      await this.dataSource.manager.save(wallet);
-      await this.transactionService.createTransaction(
-        {
-          ...data as any,
-          amount: Number(data.amount),
-          type: TransactionType.TRANSFER,
-          userWalletId: wallet.id,
-          status: TransactionStatus.COMPLETED,
-          paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
-          paymentMethod: PaymentMethod.APP_PAY,
-
-        },
-      );
-      return wallet;
+      userWallet.wallet.balance = currentBalance;
+      userWallet.wallet.ActualSpend += Number(data.amount);
+      await this.dataSource.manager.save(userWallet.wallet);
+      await this.transactionService.createTransaction({
+        ...(data as any),
+        amount: Number(data.amount),
+        type: TransactionType.TRANSFER,
+        userWalletId: userWallet.wallet.id,
+        status: TransactionStatus.COMPLETED,
+        paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
+        paymentMethod: PaymentMethod.APP_PAY,
+      });
+      console.log({ userWallet });
+      return userWallet.wallet;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
@@ -100,31 +122,29 @@ export class AppService {
 
   async transferFundsIntoUserWallet(data: Partial<fundWalletPayload>) {
     try {
-      const wallet = await this.getUserWallet({userId: data.userId})
+      const userWallet = await this.getUserWallet({ userId: data.userId });
 
-      if (!wallet) throw new BadRequestException('Wallet not found');
-      if (Number(data.amount) <= 0) throw new BadRequestException('Invalid amount');
-      const curr = Number(wallet?.balance);
+      if (!userWallet) throw new BadRequestException('Wallet not found');
+      if (Number(data.amount) <= 0)
+        throw new BadRequestException('Invalid amount');
+      const curr = Number(userWallet.wallet?.balance);
       const currentBalance = curr + Number(data.amount);
-      wallet.balance = currentBalance;
-      wallet.totalCredit += Number(data.amount)
-      await this.dataSource.manager.save(wallet);
-      await this.transactionService.createTransaction(
-        {
-          ...data as any,
-          amount: Number(data.amount),
-          type: TransactionType.DEPOSIT,
-          userWalletId: wallet.id,
-          status: TransactionStatus.COMPLETED,
-          paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
-          paymentMethod: PaymentMethod.APP_PAY,
-
-        },
-      );
-      return wallet;
+      userWallet.wallet.balance = currentBalance;
+      userWallet.wallet.totalCredit += Number(data.amount);
+      await this.dataSource.manager.save(userWallet.wallet);
+      await this.transactionService.createTransaction({
+        ...(data as any),
+        amount: Number(data.amount),
+        type: TransactionType.DEPOSIT,
+        userWalletId: userWallet.wallet.id,
+        status: TransactionStatus.COMPLETED,
+        paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
+        paymentMethod: PaymentMethod.APP_PAY,
+      });
+      console.log({ userWallet });
+      return userWallet.wallet;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
-
   }
 }

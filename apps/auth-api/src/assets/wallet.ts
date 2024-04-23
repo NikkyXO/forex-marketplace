@@ -2,7 +2,6 @@
 import * as _m0 from "protobufjs/minimal";
 import { Timestamp } from "../../../../google/protobuf/timestamp";
 import { StringValue } from "../../../../google/protobuf/wrappers";
-import Long = require("long");
 
 export const protobufPackage = "wallet";
 
@@ -222,6 +221,10 @@ export interface getUserWalletRequest {
   userId: string;
 }
 
+export interface getUserWalletResponse {
+  wallet?: IWalletPayload | undefined;
+}
+
 export interface checkTransactionRequest {
   paymentReference: string;
 }
@@ -261,8 +264,9 @@ export interface ITransaction {
   userId: string;
   paymentMethod: PaymentMethod;
   baseCurrency: string;
-  TransactionType: string;
-  TransactionStatus: string;
+  transactionType: string;
+  transactionStatus: string;
+  accountNumber: number;
 }
 
 export interface fundWalletPayload {
@@ -280,15 +284,15 @@ export interface createWalletPayload {
 }
 
 export interface IWalletPayload {
-  id: string;
-  userId: string;
-  balance: number;
-  totalCredit: number;
-  amount: number;
-  ActualSpend: number;
-  accountNumber: number;
-  createdAt: Date | undefined;
-  updatedAt: Date | undefined;
+  id?: string | undefined;
+  userId?: string | undefined;
+  balance?: number | undefined;
+  totalCredit?: number | undefined;
+  amount?: number | undefined;
+  ActualSpend?: number | undefined;
+  accountNumber?: number | undefined;
+  createdAt?: Date | undefined;
+  updatedAt?: Date | undefined;
 }
 
 export interface transferWalletFundPayload {
@@ -433,6 +437,65 @@ export const getUserWalletRequest = {
   },
 };
 
+function createBasegetUserWalletResponse(): getUserWalletResponse {
+  return { wallet: undefined };
+}
+
+export const getUserWalletResponse = {
+  encode(message: getUserWalletResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.wallet !== undefined) {
+      IWalletPayload.encode(message.wallet, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): getUserWalletResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasegetUserWalletResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.wallet = IWalletPayload.decode(reader, reader.uint32());
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): getUserWalletResponse {
+    return { wallet: isSet(object.wallet) ? IWalletPayload.fromJSON(object.wallet) : undefined };
+  },
+
+  toJSON(message: getUserWalletResponse): unknown {
+    const obj: any = {};
+    if (message.wallet !== undefined) {
+      obj.wallet = IWalletPayload.toJSON(message.wallet);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<getUserWalletResponse>, I>>(base?: I): getUserWalletResponse {
+    return getUserWalletResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<getUserWalletResponse>, I>>(object: I): getUserWalletResponse {
+    const message = createBasegetUserWalletResponse();
+    message.wallet = (object.wallet !== undefined && object.wallet !== null)
+      ? IWalletPayload.fromPartial(object.wallet)
+      : undefined;
+    return message;
+  },
+};
+
 function createBasecheckTransactionRequest(): checkTransactionRequest {
   return { paymentReference: "" };
 }
@@ -503,16 +566,16 @@ export const WalletCreatePayload = {
       writer.uint32(18).string(message.userId);
     }
     if (message.balance !== 0) {
-      writer.uint32(24).int64(message.balance);
+      writer.uint32(24).int32(message.balance);
     }
     if (message.totalCredit !== 0) {
-      writer.uint32(32).int64(message.totalCredit);
+      writer.uint32(32).int32(message.totalCredit);
     }
     if (message.actualSpend !== 0) {
-      writer.uint32(40).int64(message.actualSpend);
+      writer.uint32(40).int32(message.actualSpend);
     }
     if (message.accountNumber !== 0) {
-      writer.uint32(48).int64(message.accountNumber);
+      writer.uint32(48).int32(message.accountNumber);
     }
     return writer;
   },
@@ -543,28 +606,28 @@ export const WalletCreatePayload = {
             break;
           }
 
-          message.balance = longToNumber(reader.int64() as Long);
+          message.balance = reader.int32();
           continue;
         case 4:
           if (tag !== 32) {
             break;
           }
 
-          message.totalCredit = longToNumber(reader.int64() as Long);
+          message.totalCredit = reader.int32();
           continue;
         case 5:
           if (tag !== 40) {
             break;
           }
 
-          message.actualSpend = longToNumber(reader.int64() as Long);
+          message.actualSpend = reader.int32();
           continue;
         case 6:
           if (tag !== 48) {
             break;
           }
 
-          message.accountNumber = longToNumber(reader.int64() as Long);
+          message.accountNumber = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -645,7 +708,7 @@ function createBaseTransactionCreatePayload(): TransactionCreatePayload {
 export const TransactionCreatePayload = {
   encode(message: TransactionCreatePayload, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.amount !== 0) {
-      writer.uint32(8).int64(message.amount);
+      writer.uint32(8).int32(message.amount);
     }
     if (message.paymentPurpose !== 0) {
       writer.uint32(16).int32(message.paymentPurpose);
@@ -698,7 +761,7 @@ export const TransactionCreatePayload = {
             break;
           }
 
-          message.amount = longToNumber(reader.int64() as Long);
+          message.amount = reader.int32();
           continue;
         case 2:
           if (tag !== 16) {
@@ -888,15 +951,16 @@ function createBaseITransaction(): ITransaction {
     userId: "",
     paymentMethod: 0,
     baseCurrency: "",
-    TransactionType: "",
-    TransactionStatus: "",
+    transactionType: "",
+    transactionStatus: "",
+    accountNumber: 0,
   };
 }
 
 export const ITransaction = {
   encode(message: ITransaction, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.amount !== 0) {
-      writer.uint32(8).int64(message.amount);
+      writer.uint32(8).int32(message.amount);
     }
     if (message.paymentPurpose !== "") {
       writer.uint32(18).string(message.paymentPurpose);
@@ -922,11 +986,14 @@ export const ITransaction = {
     if (message.baseCurrency !== "") {
       writer.uint32(74).string(message.baseCurrency);
     }
-    if (message.TransactionType !== "") {
-      writer.uint32(82).string(message.TransactionType);
+    if (message.transactionType !== "") {
+      writer.uint32(82).string(message.transactionType);
     }
-    if (message.TransactionStatus !== "") {
-      writer.uint32(90).string(message.TransactionStatus);
+    if (message.transactionStatus !== "") {
+      writer.uint32(90).string(message.transactionStatus);
+    }
+    if (message.accountNumber !== 0) {
+      writer.uint32(96).int32(message.accountNumber);
     }
     return writer;
   },
@@ -943,7 +1010,7 @@ export const ITransaction = {
             break;
           }
 
-          message.amount = longToNumber(reader.int64() as Long);
+          message.amount = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -1006,14 +1073,21 @@ export const ITransaction = {
             break;
           }
 
-          message.TransactionType = reader.string();
+          message.transactionType = reader.string();
           continue;
         case 11:
           if (tag !== 90) {
             break;
           }
 
-          message.TransactionStatus = reader.string();
+          message.transactionStatus = reader.string();
+          continue;
+        case 12:
+          if (tag !== 96) {
+            break;
+          }
+
+          message.accountNumber = reader.int32();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -1035,8 +1109,9 @@ export const ITransaction = {
       userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
       paymentMethod: isSet(object.paymentMethod) ? paymentMethodFromJSON(object.paymentMethod) : 0,
       baseCurrency: isSet(object.baseCurrency) ? globalThis.String(object.baseCurrency) : "",
-      TransactionType: isSet(object.TransactionType) ? globalThis.String(object.TransactionType) : "",
-      TransactionStatus: isSet(object.TransactionStatus) ? globalThis.String(object.TransactionStatus) : "",
+      transactionType: isSet(object.transactionType) ? globalThis.String(object.transactionType) : "",
+      transactionStatus: isSet(object.transactionStatus) ? globalThis.String(object.transactionStatus) : "",
+      accountNumber: isSet(object.accountNumber) ? globalThis.Number(object.accountNumber) : 0,
     };
   },
 
@@ -1069,11 +1144,14 @@ export const ITransaction = {
     if (message.baseCurrency !== "") {
       obj.baseCurrency = message.baseCurrency;
     }
-    if (message.TransactionType !== "") {
-      obj.TransactionType = message.TransactionType;
+    if (message.transactionType !== "") {
+      obj.transactionType = message.transactionType;
     }
-    if (message.TransactionStatus !== "") {
-      obj.TransactionStatus = message.TransactionStatus;
+    if (message.transactionStatus !== "") {
+      obj.transactionStatus = message.transactionStatus;
+    }
+    if (message.accountNumber !== 0) {
+      obj.accountNumber = Math.round(message.accountNumber);
     }
     return obj;
   },
@@ -1092,8 +1170,9 @@ export const ITransaction = {
     message.userId = object.userId ?? "";
     message.paymentMethod = object.paymentMethod ?? 0;
     message.baseCurrency = object.baseCurrency ?? "";
-    message.TransactionType = object.TransactionType ?? "";
-    message.TransactionStatus = object.TransactionStatus ?? "";
+    message.transactionType = object.transactionType ?? "";
+    message.transactionStatus = object.transactionStatus ?? "";
+    message.accountNumber = object.accountNumber ?? 0;
     return message;
   },
 };
@@ -1113,7 +1192,7 @@ function createBasefundWalletPayload(): fundWalletPayload {
 export const fundWalletPayload = {
   encode(message: fundWalletPayload, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.amount !== 0) {
-      writer.uint32(8).int64(message.amount);
+      writer.uint32(8).int32(message.amount);
     }
     if (message.paymentMethod !== 0) {
       writer.uint32(16).int32(message.paymentMethod);
@@ -1148,7 +1227,7 @@ export const fundWalletPayload = {
             break;
           }
 
-          message.amount = longToNumber(reader.int64() as Long);
+          message.amount = reader.int32();
           continue;
         case 2:
           if (tag !== 16) {
@@ -1314,13 +1393,13 @@ export const createWalletPayload = {
 
 function createBaseIWalletPayload(): IWalletPayload {
   return {
-    id: "",
-    userId: "",
-    balance: 0,
-    totalCredit: 0,
-    amount: 0,
-    ActualSpend: 0,
-    accountNumber: 0,
+    id: undefined,
+    userId: undefined,
+    balance: undefined,
+    totalCredit: undefined,
+    amount: undefined,
+    ActualSpend: undefined,
+    accountNumber: undefined,
     createdAt: undefined,
     updatedAt: undefined,
   };
@@ -1328,26 +1407,26 @@ function createBaseIWalletPayload(): IWalletPayload {
 
 export const IWalletPayload = {
   encode(message: IWalletPayload, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.id !== "") {
+    if (message.id !== undefined) {
       writer.uint32(10).string(message.id);
     }
-    if (message.userId !== "") {
+    if (message.userId !== undefined) {
       writer.uint32(18).string(message.userId);
     }
-    if (message.balance !== 0) {
-      writer.uint32(24).int64(message.balance);
+    if (message.balance !== undefined) {
+      writer.uint32(24).int32(message.balance);
     }
-    if (message.totalCredit !== 0) {
-      writer.uint32(32).int64(message.totalCredit);
+    if (message.totalCredit !== undefined) {
+      writer.uint32(32).int32(message.totalCredit);
     }
-    if (message.amount !== 0) {
-      writer.uint32(40).int64(message.amount);
+    if (message.amount !== undefined) {
+      writer.uint32(40).int32(message.amount);
     }
-    if (message.ActualSpend !== 0) {
-      writer.uint32(48).int64(message.ActualSpend);
+    if (message.ActualSpend !== undefined) {
+      writer.uint32(48).int32(message.ActualSpend);
     }
-    if (message.accountNumber !== 0) {
-      writer.uint32(56).int64(message.accountNumber);
+    if (message.accountNumber !== undefined) {
+      writer.uint32(56).int32(message.accountNumber);
     }
     if (message.createdAt !== undefined) {
       Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(66).fork()).ldelim();
@@ -1384,35 +1463,35 @@ export const IWalletPayload = {
             break;
           }
 
-          message.balance = longToNumber(reader.int64() as Long);
+          message.balance = reader.int32();
           continue;
         case 4:
           if (tag !== 32) {
             break;
           }
 
-          message.totalCredit = longToNumber(reader.int64() as Long);
+          message.totalCredit = reader.int32();
           continue;
         case 5:
           if (tag !== 40) {
             break;
           }
 
-          message.amount = longToNumber(reader.int64() as Long);
+          message.amount = reader.int32();
           continue;
         case 6:
           if (tag !== 48) {
             break;
           }
 
-          message.ActualSpend = longToNumber(reader.int64() as Long);
+          message.ActualSpend = reader.int32();
           continue;
         case 7:
           if (tag !== 56) {
             break;
           }
 
-          message.accountNumber = longToNumber(reader.int64() as Long);
+          message.accountNumber = reader.int32();
           continue;
         case 8:
           if (tag !== 66) {
@@ -1439,13 +1518,13 @@ export const IWalletPayload = {
 
   fromJSON(object: any): IWalletPayload {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
-      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
-      balance: isSet(object.balance) ? globalThis.Number(object.balance) : 0,
-      totalCredit: isSet(object.totalCredit) ? globalThis.Number(object.totalCredit) : 0,
-      amount: isSet(object.amount) ? globalThis.Number(object.amount) : 0,
-      ActualSpend: isSet(object.ActualSpend) ? globalThis.Number(object.ActualSpend) : 0,
-      accountNumber: isSet(object.accountNumber) ? globalThis.Number(object.accountNumber) : 0,
+      id: isSet(object.id) ? globalThis.String(object.id) : undefined,
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : undefined,
+      balance: isSet(object.balance) ? globalThis.Number(object.balance) : undefined,
+      totalCredit: isSet(object.totalCredit) ? globalThis.Number(object.totalCredit) : undefined,
+      amount: isSet(object.amount) ? globalThis.Number(object.amount) : undefined,
+      ActualSpend: isSet(object.ActualSpend) ? globalThis.Number(object.ActualSpend) : undefined,
+      accountNumber: isSet(object.accountNumber) ? globalThis.Number(object.accountNumber) : undefined,
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
     };
@@ -1453,25 +1532,25 @@ export const IWalletPayload = {
 
   toJSON(message: IWalletPayload): unknown {
     const obj: any = {};
-    if (message.id !== "") {
+    if (message.id !== undefined) {
       obj.id = message.id;
     }
-    if (message.userId !== "") {
+    if (message.userId !== undefined) {
       obj.userId = message.userId;
     }
-    if (message.balance !== 0) {
+    if (message.balance !== undefined) {
       obj.balance = Math.round(message.balance);
     }
-    if (message.totalCredit !== 0) {
+    if (message.totalCredit !== undefined) {
       obj.totalCredit = Math.round(message.totalCredit);
     }
-    if (message.amount !== 0) {
+    if (message.amount !== undefined) {
       obj.amount = Math.round(message.amount);
     }
-    if (message.ActualSpend !== 0) {
+    if (message.ActualSpend !== undefined) {
       obj.ActualSpend = Math.round(message.ActualSpend);
     }
-    if (message.accountNumber !== 0) {
+    if (message.accountNumber !== undefined) {
       obj.accountNumber = Math.round(message.accountNumber);
     }
     if (message.createdAt !== undefined) {
@@ -1488,13 +1567,13 @@ export const IWalletPayload = {
   },
   fromPartial<I extends Exact<DeepPartial<IWalletPayload>, I>>(object: I): IWalletPayload {
     const message = createBaseIWalletPayload();
-    message.id = object.id ?? "";
-    message.userId = object.userId ?? "";
-    message.balance = object.balance ?? 0;
-    message.totalCredit = object.totalCredit ?? 0;
-    message.amount = object.amount ?? 0;
-    message.ActualSpend = object.ActualSpend ?? 0;
-    message.accountNumber = object.accountNumber ?? 0;
+    message.id = object.id ?? undefined;
+    message.userId = object.userId ?? undefined;
+    message.balance = object.balance ?? undefined;
+    message.totalCredit = object.totalCredit ?? undefined;
+    message.amount = object.amount ?? undefined;
+    message.ActualSpend = object.ActualSpend ?? undefined;
+    message.accountNumber = object.accountNumber ?? undefined;
     message.createdAt = object.createdAt ?? undefined;
     message.updatedAt = object.updatedAt ?? undefined;
     return message;
@@ -1517,10 +1596,10 @@ function createBasetransferWalletFundPayload(): transferWalletFundPayload {
 export const transferWalletFundPayload = {
   encode(message: transferWalletFundPayload, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.amount !== 0) {
-      writer.uint32(8).int64(message.amount);
+      writer.uint32(8).int32(message.amount);
     }
     if (message.accountNumber !== 0) {
-      writer.uint32(16).int64(message.accountNumber);
+      writer.uint32(16).int32(message.accountNumber);
     }
     if (message.pin !== "") {
       writer.uint32(26).string(message.pin);
@@ -1555,14 +1634,14 @@ export const transferWalletFundPayload = {
             break;
           }
 
-          message.amount = longToNumber(reader.int64() as Long);
+          message.amount = reader.int32();
           continue;
         case 2:
           if (tag !== 16) {
             break;
           }
 
-          message.accountNumber = longToNumber(reader.int64() as Long);
+          message.accountNumber = reader.int32();
           continue;
         case 3:
           if (tag !== 26) {
@@ -1676,7 +1755,7 @@ export const transferWalletFundPayload = {
 
 export interface WalletServiceClient {
   createUserWallet(request: createWalletPayload): Promise<IWalletPayload>;
-  getUserWallet(request: getUserWalletRequest): Promise<IWalletPayload>;
+  getUserWallet(request: getUserWalletRequest): Promise<getUserWalletResponse>;
   fundWallet(request: fundWalletPayload): Promise<IWalletPayload>;
   transferFundsFromWallet(request: fundWalletPayload): Promise<IWalletPayload>;
   transferFundsIntoWallet(request: fundWalletPayload): Promise<IWalletPayload>;
@@ -1707,10 +1786,10 @@ export class WalletServiceClientClientImpl implements WalletServiceClient {
     return promise.then((data) => IWalletPayload.decode(_m0.Reader.create(data)));
   }
 
-  getUserWallet(request: getUserWalletRequest): Promise<IWalletPayload> {
+  getUserWallet(request: getUserWalletRequest): Promise<getUserWalletResponse> {
     const data = getUserWalletRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, "getUserWallet", data);
-    return promise.then((data) => IWalletPayload.decode(_m0.Reader.create(data)));
+    return promise.then((data) => getUserWalletResponse.decode(_m0.Reader.create(data)));
   }
 
   fundWallet(request: fundWalletPayload): Promise<IWalletPayload> {
@@ -1786,18 +1865,6 @@ function fromJsonTimestamp(o: any): Date {
   } else {
     return fromTimestamp(Timestamp.fromJSON(o));
   }
-}
-
-function longToNumber(long: Long): number {
-  if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  return long.toNumber();
-}
-
-if (_m0.util.Long !== Long) {
-  _m0.util.Long = Long as any;
-  _m0.configure();
 }
 
 function isSet(value: any): boolean {

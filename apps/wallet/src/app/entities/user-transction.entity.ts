@@ -38,12 +38,15 @@ export enum PaymentProvider {
 
 
 @Entity()
-export class Transaction extends Repository<Transaction> {
+export class Transaction {
   @ObjectIdColumn()
   id: string;
 
   @Column()
   userWalletId: string;
+
+  @Column()
+  userId: string;
 
   @Column()
   paymentPurpose: SystemPaymentPurpose;
@@ -55,21 +58,24 @@ export class Transaction extends Repository<Transaction> {
   baseCurrency: string;
 
   @Column()
-  amount: string;
+  amount: number;
 
   @Column()
   exchangeRate: number;
 
   @Column()
-  type: TransactionType;
+  transactionType: TransactionType;
 
   @Column()
-  status: TransactionStatus;
+  transactionStatus: TransactionStatus;
 
   @Column()
   paymentReference: string;
 
   @Column()
   paymentProvider: PaymentProvider;
+
+  @Column()
+  accountNumber: number;
 
 }

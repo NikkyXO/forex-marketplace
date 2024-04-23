@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 
-import { AppAuthGuard } from '../guard/app-jwt-guard';
+import { AppAuthGuard, IExpressRequest } from '../guard/app-jwt-guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GRPCOrderService } from './app-order.service';
 import { MakeOrderDto } from '../dtos/order.dto';
@@ -8,7 +8,7 @@ import { MakeOrderDto } from '../dtos/order.dto';
 @ApiTags('order')
 @ApiBearerAuth()
 @Controller('order')
-@UseGuards(AppAuthGuard)
+// @UseGuards(AppAuthGuard)
 export class GRPCOrderController {
   constructor(private readonly orderService: GRPCOrderService) {}
 
@@ -16,7 +16,10 @@ export class GRPCOrderController {
     summary: 'Buys a seller product, and creates an order',
   })
   @Post('create')
-  BuyProduct(@Body() data: MakeOrderDto) {
+  BuyProduct(@Req() req: IExpressRequest, @Body() data: MakeOrderDto) {
+    const buyingUserId = req.userId;
+    data.buyingUserId = data.buyingUserId || buyingUserId
+    console.log('in gateway  controller ', data);
     return this.orderService.buyAProduct(data)
   }
 }

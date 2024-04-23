@@ -3,6 +3,7 @@ syntax = "proto3";
 package order;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 
 service OrderServiceClient {
@@ -12,7 +13,8 @@ service OrderServiceClient {
   rpc createUserProduct(addUserProduct) returns (createUserProductResponse) {}
   rpc getUserProduct(getUserProductPayload) returns (createUserProductResponse) {}
   rpc removeUserProduct(getUserProductPayload) returns (deleteResponse) {}
-  rpc getAllUserProducts(getAllUserProductsPayload) returns (stream allProductResponse) {}
+  rpc getAllUserProducts(getAllUserProductsPayload) returns (stream allUserProductsResponse) {}
+  rpc getAllProducts(google.protobuf.Empty) returns (stream allProductResponse) {}
   rpc buyAProduct(buyASellerProductPayload) returns (buyASellerProductResponse) {}
 
   // rpc getAllUserProducts(getAllUserProductsPayload) returns (stream createUserProductResponse) {}
@@ -20,11 +22,11 @@ service OrderServiceClient {
 
 
 message buyASellerProductPayload {
-  string userId = 1;
-  string userProductId = 2;
-  int32 quantity =3;
-  string fromCurrency = 4;
-  string toCurrency = 5;
+  string userProductId = 1;
+  int32 quantity =2;
+  string fromCurrency = 3;
+  string toCurrency = 4;
+  optional string buyingUserId = 5;
 
 }
 
@@ -36,7 +38,7 @@ message buyASellerProductResponse {
 
 
 message createUserProductResponse {
-  int64 sellingPrice = 1;
+  int32 sellingPrice = 1;
   string productId = 2;
   string userId = 3;
   optional string description = 4;
@@ -45,9 +47,14 @@ message createUserProductResponse {
   google.protobuf.Timestamp updatedAt = 7;
 }
 
-message allProductResponse {
+message allUserProductsResponse {
   repeated createUserProductResponse products = 1;
 }
+
+message allProductResponse {
+  repeated createProductResponse products = 1;
+}
+
 
 message createProductPayload {
   string title = 1;
@@ -63,12 +70,13 @@ message createProductResponse {
   string title = 1;
   float price = 2;
   string image = 3;
-  google.protobuf.Timestamp  createdAt = 4;
-  google.protobuf.Timestamp updatedAt = 5;
+  string id = 4;
+  google.protobuf.Timestamp  createdAt = 5;
+  google.protobuf.Timestamp updatedAt = 6;
 }
 
 message addUserProduct {
-  int64 sellingPrice = 1;
+  int32 sellingPrice = 1;
   string productId = 2;
   string userId = 3;
   optional string description = 4;
@@ -76,7 +84,8 @@ message addUserProduct {
 }
 
 message getProductPayload {
-  string productId = 1;
+  optional string productId = 1;
+  optional string title = 2;
 }
 
 message getUserProductPayload {

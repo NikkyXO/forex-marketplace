@@ -1,3 +1,5 @@
+import { allProductResponse, createProductResponse } from "../../assets/order";
+
 export class CurrencyExchangeDto {
   amount: number;
   fromCurrency: string;
@@ -10,9 +12,14 @@ export class CreateTransactionDto extends CurrencyExchangeDto {
 }
 
 export class buyProductDto {
-  userId: string;
+  buyingUserId?: string
   userProductId: string;
   quantity: number;
   fromCurrency: string;
   toCurrency: string;
+}
+
+export  class allProductsDto implements allProductResponse {
+  products: createProductResponse[];
+
 }

@@ -25,11 +25,12 @@ import { PassportModule } from '@nestjs/passport';
         name: 'wallet',
         transport: Transport.GRPC,
         options: {
+          url: "127.0.0.1:3335",
           package: 'wallet',
           protoPath: path.join(__dirname, '/assets/wallet.proto'),
         },
       },
-      
+
 
     ]),
     DatabaseModule,

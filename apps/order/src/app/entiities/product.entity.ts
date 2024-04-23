@@ -6,7 +6,7 @@ export class Product {
   @ObjectIdColumn()
   id: string;
 
-  @Column()
+  @Column({ unique: true})
   title: string;
 
   @Column()

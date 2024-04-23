@@ -18,7 +18,7 @@ export class UserProduct {
   @Column()
   product_visibility: boolean;
 
-  @Column()
+  @Column({type: 'number'})
   sellingPrice: number
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

@@ -14,7 +14,7 @@ services:
     expose:
      - 3332
     ports:
-      - 4010:3332
+      - 3332:3332
       - 9010:9664
     environment:
       DATABASE_HOST: db
@@ -29,16 +29,15 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    depends_on:
-      - db
     expose:
      - 3331
     ports:
-      - 4020:3331
+      - 3331:3331
       - 9020:9663
     environment:
       DATABASE_HOST: db
       DATABASE_SYNCHRONIZE: 'true'
+
 
   order:
     build:
@@ -54,7 +53,7 @@ services:
     expose:
      - 3333
     ports:
-      - 4030:3333
+      - 3333:3333
       - 9030:9665
     environment:
       DATABASE_HOST: db
@@ -74,12 +73,12 @@ services:
     expose:
      - 3335
     ports:
-      - 4040:3335
+      - 3335:3335
       - 9040:9667
     environment:
       DATABASE_HOST: db
       DATABASE_SYNCHRONIZE: 'true'
-
+    
   rate:
     build:
       dockerfile: apps/rate/Dockerfile
@@ -89,19 +88,11 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    depends_on:
-      - db
     expose:
      - 3334
     ports:
-      - 4050:3334
+      - 3334:3334
       - 9050:9666
-    environment:
-      DATABASE_HOST: db
-      DATABASE_SYNCHRONIZE: 'true'
-
-
-
 
   db:
     image: mongo:latest

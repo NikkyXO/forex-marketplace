@@ -17,11 +17,11 @@ import { Item } from './entiities/item.entity';
     DatabaseModule,
     TypeOrmModule.forFeature([Product, UserProduct, Item]),
     ClientsModule.register([
-
       {
         name: 'wallet',
         transport: Transport.GRPC,
         options: {
+          url: "127.0.0.1:3335",
           package: 'wallet',
           protoPath: path.join(__dirname, '/assets/wallet.proto'),
         },

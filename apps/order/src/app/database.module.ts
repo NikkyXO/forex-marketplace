@@ -9,11 +9,14 @@ function DatabaseOrmModule(): DynamicModule {
   const config = new EnvService().read();
   return TypeOrmModule.forRoot({
     type: 'mongodb',
-    url: config.AUTH_DB_URL,
+    //url: config.AUTH_DB_URL || 'mongodb://localhost:27017/db2',
+    host: 'db',
+    port: 27017,
+    database: 'orderDb',
     synchronize: true,
     logging: true,
     useNewUrlParser: true,
-    ssl: true,
+    // ssl: true,
     useUnifiedTopology: true,
     autoLoadEntities: true,
     keepConnectionAlive: true,

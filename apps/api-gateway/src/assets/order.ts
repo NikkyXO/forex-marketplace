@@ -2,17 +2,17 @@
 import * as _m0 from "protobufjs/minimal";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
+import { Empty } from "../../../../google/protobuf/empty";
 import { Timestamp } from "../../../../google/protobuf/timestamp";
-import Long = require("long");
 
 export const protobufPackage = "order";
 
 export interface buyASellerProductPayload {
-  userId: string;
   userProductId: string;
   quantity: number;
   fromCurrency: string;
   toCurrency: string;
+  buyingUserId?: string | undefined;
 }
 
 export interface buyASellerProductResponse {
@@ -30,8 +30,12 @@ export interface createUserProductResponse {
   updatedAt: Date | undefined;
 }
 
-export interface allProductResponse {
+export interface allUserProductsResponse {
   products: createUserProductResponse[];
+}
+
+export interface allProductResponse {
+  products: createProductResponse[];
 }
 
 export interface createProductPayload {
@@ -48,6 +52,7 @@ export interface createProductResponse {
   title: string;
   price: number;
   image: string;
+  id: string;
   createdAt: Date | undefined;
   updatedAt: Date | undefined;
 }
@@ -61,7 +66,8 @@ export interface addUserProduct {
 }
 
 export interface getProductPayload {
-  productId: string;
+  productId?: string | undefined;
+  title?: string | undefined;
 }
 
 export interface getUserProductPayload {
@@ -79,25 +85,25 @@ export interface getAllUserProductsPayload {
 }
 
 function createBasebuyASellerProductPayload(): buyASellerProductPayload {
-  return { userId: "", userProductId: "", quantity: 0, fromCurrency: "", toCurrency: "" };
+  return { userProductId: "", quantity: 0, fromCurrency: "", toCurrency: "", buyingUserId: undefined };
 }
 
 export const buyASellerProductPayload = {
   encode(message: buyASellerProductPayload, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.userId !== "") {
-      writer.uint32(10).string(message.userId);
-    }
     if (message.userProductId !== "") {
-      writer.uint32(18).string(message.userProductId);
+      writer.uint32(10).string(message.userProductId);
     }
     if (message.quantity !== 0) {
-      writer.uint32(24).int32(message.quantity);
+      writer.uint32(16).int32(message.quantity);
     }
     if (message.fromCurrency !== "") {
-      writer.uint32(34).string(message.fromCurrency);
+      writer.uint32(26).string(message.fromCurrency);
     }
     if (message.toCurrency !== "") {
-      writer.uint32(42).string(message.toCurrency);
+      writer.uint32(34).string(message.toCurrency);
+    }
+    if (message.buyingUserId !== undefined) {
+      writer.uint32(42).string(message.buyingUserId);
     }
     return writer;
   },
@@ -114,35 +120,35 @@ export const buyASellerProductPayload = {
             break;
           }
 
-          message.userId = reader.string();
-          continue;
-        case 2:
-          if (tag !== 18) {
-            break;
-          }
-
           message.userProductId = reader.string();
           continue;
-        case 3:
-          if (tag !== 24) {
+        case 2:
+          if (tag !== 16) {
             break;
           }
 
           message.quantity = reader.int32();
+          continue;
+        case 3:
+          if (tag !== 26) {
+            break;
+          }
+
+          message.fromCurrency = reader.string();
           continue;
         case 4:
           if (tag !== 34) {
             break;
           }
 
-          message.fromCurrency = reader.string();
+          message.toCurrency = reader.string();
           continue;
         case 5:
           if (tag !== 42) {
             break;
           }
 
-          message.toCurrency = reader.string();
+          message.buyingUserId = reader.string();
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -155,19 +161,16 @@ export const buyASellerProductPayload = {
 
   fromJSON(object: any): buyASellerProductPayload {
     return {
-      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
       userProductId: isSet(object.userProductId) ? globalThis.String(object.userProductId) : "",
       quantity: isSet(object.quantity) ? globalThis.Number(object.quantity) : 0,
       fromCurrency: isSet(object.fromCurrency) ? globalThis.String(object.fromCurrency) : "",
       toCurrency: isSet(object.toCurrency) ? globalThis.String(object.toCurrency) : "",
+      buyingUserId: isSet(object.buyingUserId) ? globalThis.String(object.buyingUserId) : undefined,
     };
   },
 
   toJSON(message: buyASellerProductPayload): unknown {
     const obj: any = {};
-    if (message.userId !== "") {
-      obj.userId = message.userId;
-    }
     if (message.userProductId !== "") {
       obj.userProductId = message.userProductId;
     }
@@ -180,6 +183,9 @@ export const buyASellerProductPayload = {
     if (message.toCurrency !== "") {
       obj.toCurrency = message.toCurrency;
     }
+    if (message.buyingUserId !== undefined) {
+      obj.buyingUserId = message.buyingUserId;
+    }
     return obj;
   },
 
@@ -188,11 +194,11 @@ export const buyASellerProductPayload = {
   },
   fromPartial<I extends Exact<DeepPartial<buyASellerProductPayload>, I>>(object: I): buyASellerProductPayload {
     const message = createBasebuyASellerProductPayload();
-    message.userId = object.userId ?? "";
     message.userProductId = object.userProductId ?? "";
     message.quantity = object.quantity ?? 0;
     message.fromCurrency = object.fromCurrency ?? "";
     message.toCurrency = object.toCurrency ?? "";
+    message.buyingUserId = object.buyingUserId ?? undefined;
     return message;
   },
 };
@@ -286,7 +292,7 @@ function createBasecreateUserProductResponse(): createUserProductResponse {
 export const createUserProductResponse = {
   encode(message: createUserProductResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.sellingPrice !== 0) {
-      writer.uint32(8).int64(message.sellingPrice);
+      writer.uint32(8).int32(message.sellingPrice);
     }
     if (message.productId !== "") {
       writer.uint32(18).string(message.productId);
@@ -321,7 +327,7 @@ export const createUserProductResponse = {
             break;
           }
 
-          message.sellingPrice = longToNumber(reader.int64() as Long);
+          message.sellingPrice = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -428,22 +434,22 @@ export const createUserProductResponse = {
   },
 };
 
-function createBaseallProductResponse(): allProductResponse {
+function createBaseallUserProductsResponse(): allUserProductsResponse {
   return { products: [] };
 }
 
-export const allProductResponse = {
-  encode(message: allProductResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+export const allUserProductsResponse = {
+  encode(message: allUserProductsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     for (const v of message.products) {
       createUserProductResponse.encode(v!, writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): allProductResponse {
+  decode(input: _m0.Reader | Uint8Array, length?: number): allUserProductsResponse {
     const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
     let end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseallProductResponse();
+    const message = createBaseallUserProductsResponse();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -463,7 +469,7 @@ export const allProductResponse = {
     return message;
   },
 
-  fromJSON(object: any): allProductResponse {
+  fromJSON(object: any): allUserProductsResponse {
     return {
       products: globalThis.Array.isArray(object?.products)
         ? object.products.map((e: any) => createUserProductResponse.fromJSON(e))
@@ -471,10 +477,71 @@ export const allProductResponse = {
     };
   },
 
-  toJSON(message: allProductResponse): unknown {
+  toJSON(message: allUserProductsResponse): unknown {
     const obj: any = {};
     if (message.products?.length) {
       obj.products = message.products.map((e) => createUserProductResponse.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<allUserProductsResponse>, I>>(base?: I): allUserProductsResponse {
+    return allUserProductsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<allUserProductsResponse>, I>>(object: I): allUserProductsResponse {
+    const message = createBaseallUserProductsResponse();
+    message.products = object.products?.map((e) => createUserProductResponse.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseallProductResponse(): allProductResponse {
+  return { products: [] };
+}
+
+export const allProductResponse = {
+  encode(message: allProductResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.products) {
+      createProductResponse.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): allProductResponse {
+    const reader = input instanceof _m0.Reader ? input : _m0.Reader.create(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseallProductResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          if (tag !== 10) {
+            break;
+          }
+
+          message.products.push(createProductResponse.decode(reader, reader.uint32()));
+          continue;
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skipType(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): allProductResponse {
+    return {
+      products: globalThis.Array.isArray(object?.products)
+        ? object.products.map((e: any) => createProductResponse.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: allProductResponse): unknown {
+    const obj: any = {};
+    if (message.products?.length) {
+      obj.products = message.products.map((e) => createProductResponse.toJSON(e));
     }
     return obj;
   },
@@ -484,7 +551,7 @@ export const allProductResponse = {
   },
   fromPartial<I extends Exact<DeepPartial<allProductResponse>, I>>(object: I): allProductResponse {
     const message = createBaseallProductResponse();
-    message.products = object.products?.map((e) => createUserProductResponse.fromPartial(e)) || [];
+    message.products = object.products?.map((e) => createProductResponse.fromPartial(e)) || [];
     return message;
   },
 };
@@ -636,7 +703,7 @@ export const deleteResponse = {
 };
 
 function createBasecreateProductResponse(): createProductResponse {
-  return { title: "", price: 0, image: "", createdAt: undefined, updatedAt: undefined };
+  return { title: "", price: 0, image: "", id: "", createdAt: undefined, updatedAt: undefined };
 }
 
 export const createProductResponse = {
@@ -650,11 +717,14 @@ export const createProductResponse = {
     if (message.image !== "") {
       writer.uint32(26).string(message.image);
     }
+    if (message.id !== "") {
+      writer.uint32(34).string(message.id);
+    }
     if (message.createdAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(34).fork()).ldelim();
+      Timestamp.encode(toTimestamp(message.createdAt), writer.uint32(42).fork()).ldelim();
     }
     if (message.updatedAt !== undefined) {
-      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(42).fork()).ldelim();
+      Timestamp.encode(toTimestamp(message.updatedAt), writer.uint32(50).fork()).ldelim();
     }
     return writer;
   },
@@ -692,10 +762,17 @@ export const createProductResponse = {
             break;
           }
 
-          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          message.id = reader.string();
           continue;
         case 5:
           if (tag !== 42) {
+            break;
+          }
+
+          message.createdAt = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
+          continue;
+        case 6:
+          if (tag !== 50) {
             break;
           }
 
@@ -715,6 +792,7 @@ export const createProductResponse = {
       title: isSet(object.title) ? globalThis.String(object.title) : "",
       price: isSet(object.price) ? globalThis.Number(object.price) : 0,
       image: isSet(object.image) ? globalThis.String(object.image) : "",
+      id: isSet(object.id) ? globalThis.String(object.id) : "",
       createdAt: isSet(object.createdAt) ? fromJsonTimestamp(object.createdAt) : undefined,
       updatedAt: isSet(object.updatedAt) ? fromJsonTimestamp(object.updatedAt) : undefined,
     };
@@ -730,6 +808,9 @@ export const createProductResponse = {
     }
     if (message.image !== "") {
       obj.image = message.image;
+    }
+    if (message.id !== "") {
+      obj.id = message.id;
     }
     if (message.createdAt !== undefined) {
       obj.createdAt = message.createdAt.toISOString();
@@ -748,6 +829,7 @@ export const createProductResponse = {
     message.title = object.title ?? "";
     message.price = object.price ?? 0;
     message.image = object.image ?? "";
+    message.id = object.id ?? "";
     message.createdAt = object.createdAt ?? undefined;
     message.updatedAt = object.updatedAt ?? undefined;
     return message;
@@ -761,7 +843,7 @@ function createBaseaddUserProduct(): addUserProduct {
 export const addUserProduct = {
   encode(message: addUserProduct, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.sellingPrice !== 0) {
-      writer.uint32(8).int64(message.sellingPrice);
+      writer.uint32(8).int32(message.sellingPrice);
     }
     if (message.productId !== "") {
       writer.uint32(18).string(message.productId);
@@ -790,7 +872,7 @@ export const addUserProduct = {
             break;
           }
 
-          message.sellingPrice = longToNumber(reader.int64() as Long);
+          message.sellingPrice = reader.int32();
           continue;
         case 2:
           if (tag !== 18) {
@@ -874,13 +956,16 @@ export const addUserProduct = {
 };
 
 function createBasegetProductPayload(): getProductPayload {
-  return { productId: "" };
+  return { productId: undefined, title: undefined };
 }
 
 export const getProductPayload = {
   encode(message: getProductPayload, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.productId !== "") {
+    if (message.productId !== undefined) {
       writer.uint32(10).string(message.productId);
+    }
+    if (message.title !== undefined) {
+      writer.uint32(18).string(message.title);
     }
     return writer;
   },
@@ -899,6 +984,13 @@ export const getProductPayload = {
 
           message.productId = reader.string();
           continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.title = reader.string();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -909,13 +1001,19 @@ export const getProductPayload = {
   },
 
   fromJSON(object: any): getProductPayload {
-    return { productId: isSet(object.productId) ? globalThis.String(object.productId) : "" };
+    return {
+      productId: isSet(object.productId) ? globalThis.String(object.productId) : undefined,
+      title: isSet(object.title) ? globalThis.String(object.title) : undefined,
+    };
   },
 
   toJSON(message: getProductPayload): unknown {
     const obj: any = {};
-    if (message.productId !== "") {
+    if (message.productId !== undefined) {
       obj.productId = message.productId;
+    }
+    if (message.title !== undefined) {
+      obj.title = message.title;
     }
     return obj;
   },
@@ -925,7 +1023,8 @@ export const getProductPayload = {
   },
   fromPartial<I extends Exact<DeepPartial<getProductPayload>, I>>(object: I): getProductPayload {
     const message = createBasegetProductPayload();
-    message.productId = object.productId ?? "";
+    message.productId = object.productId ?? undefined;
+    message.title = object.title ?? undefined;
     return message;
   },
 };
@@ -1144,7 +1243,8 @@ export interface OrderServiceClient {
   createUserProduct(request: addUserProduct): Promise<createUserProductResponse>;
   getUserProduct(request: getUserProductPayload): Promise<createUserProductResponse>;
   removeUserProduct(request: getUserProductPayload): Promise<deleteResponse>;
-  getAllUserProducts(request: getAllUserProductsPayload): Observable<allProductResponse>;
+  getAllUserProducts(request: getAllUserProductsPayload): Observable<allUserProductsResponse>;
+  getAllProducts(request: Empty): Observable<allProductResponse>;
   buyAProduct(request: buyASellerProductPayload): Promise<buyASellerProductResponse>;
 }
 
@@ -1162,6 +1262,7 @@ export class OrderServiceClientClientImpl implements OrderServiceClient {
     this.getUserProduct = this.getUserProduct.bind(this);
     this.removeUserProduct = this.removeUserProduct.bind(this);
     this.getAllUserProducts = this.getAllUserProducts.bind(this);
+    this.getAllProducts = this.getAllProducts.bind(this);
     this.buyAProduct = this.buyAProduct.bind(this);
   }
   createProduct(request: createProductPayload): Promise<createProductResponse> {
@@ -1200,9 +1301,15 @@ export class OrderServiceClientClientImpl implements OrderServiceClient {
     return promise.then((data) => deleteResponse.decode(_m0.Reader.create(data)));
   }
 
-  getAllUserProducts(request: getAllUserProductsPayload): Observable<allProductResponse> {
+  getAllUserProducts(request: getAllUserProductsPayload): Observable<allUserProductsResponse> {
     const data = getAllUserProductsPayload.encode(request).finish();
     const result = this.rpc.serverStreamingRequest(this.service, "getAllUserProducts", data);
+    return result.pipe(map((data) => allUserProductsResponse.decode(_m0.Reader.create(data))));
+  }
+
+  getAllProducts(request: Empty): Observable<allProductResponse> {
+    const data = Empty.encode(request).finish();
+    const result = this.rpc.serverStreamingRequest(this.service, "getAllProducts", data);
     return result.pipe(map((data) => allProductResponse.decode(_m0.Reader.create(data))));
   }
 
@@ -1252,18 +1359,6 @@ function fromJsonTimestamp(o: any): Date {
   } else {
     return fromTimestamp(Timestamp.fromJSON(o));
   }
-}
-
-function longToNumber(long: Long): number {
-  if (long.gt(globalThis.Number.MAX_SAFE_INTEGER)) {
-    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
-  }
-  return long.toNumber();
-}
-
-if (_m0.util.Long !== Long) {
-  _m0.util.Long = Long as any;
-  _m0.configure();
 }
 
 function isSet(value: any): boolean {

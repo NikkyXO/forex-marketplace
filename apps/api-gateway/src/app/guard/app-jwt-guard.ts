@@ -34,7 +34,6 @@ export class AppAuthGuard implements CanActivate {
     return true;
   }
   private extractTokenFromHeader(request: Request): string | undefined {
-    console.log({ headers: request.headers})
     if (request.headers['bearer']) {
       return request.headers['bearer'] as string;
     } else if (request.headers.authorization) {
@@ -43,3 +42,10 @@ export class AppAuthGuard implements CanActivate {
     }
   }
 }
+
+export interface IExpressRequest extends Request {
+  userId?: string;
+  email?: string;
+  deviceId?: string;
+}
+

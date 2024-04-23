@@ -1,21 +1,29 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ProductService } from './services/product.service'
-import { PaymentMethod, PaymentProvider, SystemPaymentPurpose, TransactionStatus, TransactionType, WalletServiceClient } from '../assets/wallet';
+import { ProductService } from './services/product.service';
+import {
+  PaymentMethod,
+  PaymentProvider,
+  SystemPaymentPurpose,
+  TransactionCreatePayload,
+  TransactionStatus,
+  TransactionType,
+  WalletServiceClient,
+} from '../assets/wallet';
 import { ClientGrpc } from '@nestjs/microservices';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Item } from './entiities/item.entity';
 import { buyProductDto, CurrencyExchangeDto } from './dtos/order.dto';
+import { firstValueFrom, Observable } from 'rxjs';
+import { error } from 'console';
 
 @Injectable()
 export class AppService implements OnModuleInit {
-
   // constructor(private readonly productService: ProductService) {}
 
   private readonly API_KEY = '305f44084e8548c9a149c945175489cc';
   private readonly API_URL = `https://openexchangerates.org/api/latest.json?app_id=${this.API_KEY}`;
-
 
   private walletServiceClient: WalletServiceClient;
 
@@ -26,11 +34,13 @@ export class AppService implements OnModuleInit {
     @InjectRepository(Item)
     private readonly itemRepository: Repository<Item>,
 
-    private readonly productService: ProductService,
+    private readonly productService: ProductService
   ) {}
 
   public onModuleInit() {
-    this.walletServiceClient = this.walletGrpc.getService<WalletServiceClient>('WalletServiceClient');
+    this.walletServiceClient = this.walletGrpc.getService<WalletServiceClient>(
+      'WalletServiceClient'
+    );
   }
 
   async fetchExchangeRates(): Promise<any> {
@@ -43,9 +53,9 @@ export class AppService implements OnModuleInit {
     }
   }
 
-
   async convertCurrency(data: CurrencyExchangeDto): Promise<number> {
     const rates = await this.fetchExchangeRates();
+
     const fromRate = rates[data.fromCurrency];
     const toRate = rates[data.toCurrency];
 
@@ -53,14 +63,15 @@ export class AppService implements OnModuleInit {
       throw new Error('Invalid currency');
     }
 
+    console.log({ fromRate });
+    console.log({ toRate });
     return (data.amount / fromRate) * toRate;
   }
 
-
-  createItem(data: Partial<Item>) {
-    this.itemRepository.create({
-      ...data as any
-    })
+  async createItem(data: Partial<Item>) {
+    return await this.itemRepository.create({
+      ...(data as any),
+    });
   }
 
   async generateReference() {
@@ -76,77 +87,115 @@ export class AppService implements OnModuleInit {
     return `APP-${result}-${Date.now()}`;
   }
 
-
   async buyASellerProduct(data: buyProductDto) {
-    const quantity = data.quantity
+    try {
+      const quantity = data.quantity;
 
-    const userProduct = await this.productService.getUserProductById(data.userProductId);
-    const totalPrice = userProduct.sellingPrice * quantity
-    const exchangeData = {
-      amount: totalPrice,
-      fromCurrency: data.fromCurrency,
-      toCurrency: data.toCurrency,
+      const userProduct = await this.productService.getUserProductById(
+        data.userProductId
+      );
+      console.log({ userProduct });
+      if (!userProduct) {
+        return {
+          error: ' user product doesnt exist',
+          message: ''
+        };
+      }
+      const totalPrice = Number(userProduct.sellingPrice) * quantity;
+      const exchangeData = {
+        amount: totalPrice,
+        fromCurrency: data.fromCurrency,
+        toCurrency: data.toCurrency,
+      };
+      // calculates amount to pay from with exchnge forex rates per item amount from external api
+      const convertedAmount = await this.convertCurrency(exchangeData);
+
+      // creates item record with quantity and amount calc
+      const itemCreateData = {
+        amount: totalPrice,
+        quantity: data.quantity,
+        productId: userProduct.productId,
+      };
+      const item = await this.createItem(itemCreateData);
+      console.log({ item });
+
+      const userWallet = await firstValueFrom(
+        this.walletServiceClient.getUserWallet({
+          userId: data.buyingUserId,
+        }) as unknown as Observable<any>
+      );
+      console.log({ userWallet });
+      const transactionData: TransactionCreatePayload = {
+        amount: totalPrice,
+        paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
+        userWalletId: userWallet.wallet.id,
+        exchangeRate: Number(convertedAmount / totalPrice),
+        paymentProvider: PaymentProvider.WALLET_PAY,
+        paymentReference: await this.generateReference(),
+        userId: data.buyingUserId,
+        paymentMethod: PaymentMethod.APP_PAY,
+        baseCurrency: data.fromCurrency,
+        transactionType: TransactionType.DEPOSIT,
+        transactionStatus: TransactionStatus.COMPLETED,
+        accountNumber: userWallet.wallet.accountNumber,
+      };
+
+      // creates transaction record
+      const transaction = await firstValueFrom(
+        this.walletServiceClient.createTransaction(
+          transactionData
+        ) as unknown as Observable<any>
+      );
+      console.log({ transaction });
+      if(!transaction) {
+        return {
+          message: '',
+          error: 'error occured while creating order'
+        }
+      }
+      const fundWalletData = {
+        amount: totalPrice,
+        paymentProvider: PaymentProvider.WALLET_PAY,
+        paymentReference: await this.generateReference(),
+        userId: data.buyingUserId,
+        paymentMethod: PaymentMethod.APP_PAY,
+        transactionStatus: TransactionStatus.COMPLETED,
+      };
+
+      const fundSellerWalletData = {
+        ...fundWalletData,
+        userId: userProduct.userId,
+      };
+
+      await this.walletServiceClient.transferFundsFromWallet(fundWalletData);
+      await this.walletServiceClient.transferFundsIntoWallet(
+        fundSellerWalletData
+      );
+
+      const removeUserProductData = {
+        productId: userProduct.productId,
+        userId: userProduct.userId,
+      };
+      await this.productService.removeUserProduct(removeUserProductData);
+
+      const addUserProductData = {
+        productId: userProduct.productId,
+        userId: userWallet.wallet.userId,
+      };
+
+      const userBoughtProduct =
+        this.productService.addBoughtProductToUser(addUserProductData);
+      if (userBoughtProduct) {
+        return {
+          message: 'SUccessfully ordered and received product',
+          error: '',
+        };
+      }
+    } catch (error) {
+      return {
+        message: '',
+        error: error.message,
+      };
     }
-    // calculates amount to pay from with exchnge forex rates per item amount from external api
-    const convertedAmount = await this.convertCurrency(exchangeData);
-
-    // creates item record with quantity and amount calc
-    const itemCreateData = {
-      amount: totalPrice,
-      quantity: data.quantity,
-      productId: userProduct.productId,
-    }
-    this.createItem(itemCreateData);
-
-    const wallet = await this.walletServiceClient.getUserWallet({userId: data.userId});
-    const transactionData = {
-      amount: totalPrice,
-      paymentPurpose: SystemPaymentPurpose.FUND_WALLET,
-      userWalletId: wallet.id,
-      exchangeRate: Number(convertedAmount / totalPrice),
-      paymentProvider: PaymentProvider.WALLET_PAY,
-      paymentReference: await this.generateReference(),
-      userId: data.userId,
-      paymentMethod: PaymentMethod.APP_PAY,
-      baseCurrency: data.fromCurrency,
-      transactionType: TransactionType.DEPOSIT,
-      transactionStatus: TransactionStatus.COMPLETED,
-      accountNumber: wallet.accountNumber.toString(),
-    }
-
-
-    // creates transaction record
-    this.walletServiceClient.createTransaction(transactionData);
-    const fundWalletData = {
-      amount: totalPrice,
-      paymentProvider: PaymentProvider.WALLET_PAY,
-      paymentReference: await this.generateReference(),
-      userId: data.userId,
-      paymentMethod: PaymentMethod.APP_PAY,
-      transactionStatus: TransactionStatus.COMPLETED,
-
-    }
-
-    const fundSellerWalletData = {
-      ...fundWalletData,
-      userId: userProduct.userId,
-    }
-
-
-    await this.walletServiceClient.transferFundsFromWallet(fundWalletData);
-    await this.walletServiceClient.transferFundsIntoWallet(fundSellerWalletData);
-
-    const removeUserProductData = {
-      productId: userProduct.productId,
-      userId: userProduct.userId,
-    }
-    await this.productService.removeUserProduct(removeUserProductData);
-
-    const addUserProductData = {
-      productId: userProduct.productId,
-      userId: wallet.userId,
-    }
-
-    this.productService.addBoughtProductToUser(addUserProductData)
   }
 }

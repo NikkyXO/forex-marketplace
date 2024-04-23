@@ -10,10 +10,14 @@ import { RegisterResponse, ValidateResponse } from '../assets/auth';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Auth, User } from './entitties';
 import { DataSource, Repository } from 'typeorm';
+import { WalletServiceClient } from '../assets/wallet';
+import { ClientGrpc } from '@nestjs/microservices';
+import { lastValueFrom, Observable } from 'rxjs';
 
 
 @Injectable()
 export class AppService {
+  private walletServiceClient: WalletServiceClient;
   @InjectRepository(Auth)
   private readonly authRepository: Repository<Auth>;
 
@@ -25,7 +29,13 @@ export class AppService {
 
   constructor(
     private readonly dataSource: DataSource,
+    @Inject('wallet') private walletGrpc: ClientGrpc,
   ) {}
+
+  public onModuleInit() {
+      this.walletServiceClient =
+      this.walletGrpc.getService<WalletServiceClient>("WalletServiceClient");
+  }
 
   public async register(data: CreateUserDto): Promise<RegisterResponse> {
     const { email, password } = data;
@@ -45,6 +55,10 @@ export class AppService {
     const newUser = this.userRepository.create(data);
     const savedUser = await this.dataSource.manager.save(newUser);
     console.log({ savedUser });
+    //const wallet = await this.walletServiceClient.createUserWallet({userId: savedUser.id})
+    const wallet = await lastValueFrom(this.walletServiceClient.createUserWallet({userId: savedUser.id}) as unknown as  Observable<any>);
+
+    console.log({ walletInAuth: wallet });
 
     return {
       status: HttpStatus.CREATED,
@@ -69,6 +83,7 @@ export class AppService {
           status: HttpStatus.NOT_FOUND,
           data: null,
           message: 'Password wrong',
+          userId: '',
         };
       }
 
@@ -80,11 +95,12 @@ export class AppService {
       });
 
       console.log({ auth });
-      return { data: { token }, status: HttpStatus.OK, message: '' };
+      return { data: { token }, status: HttpStatus.OK, message: '', userId: user.id, };
     }
     return {
       status: HttpStatus.NOT_FOUND,
       data: null,
+      userId: '',
       message: 'User not found',
     };
   }

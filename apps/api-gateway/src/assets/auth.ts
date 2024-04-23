@@ -29,6 +29,7 @@ export interface Token {
 export interface loginResultData {
   status: number;
   message: string;
+  userId: string;
   data: dataPayload | undefined;
 }
 
@@ -61,6 +62,7 @@ export interface LoginResponse {
   status: number;
   error: string[];
   token: string;
+  userId: string;
 }
 
 export interface ValidateRequest {
@@ -408,7 +410,7 @@ export const Token = {
 };
 
 function createBaseloginResultData(): loginResultData {
-  return { status: 0, message: "", data: undefined };
+  return { status: 0, message: "", userId: "", data: undefined };
 }
 
 export const loginResultData = {
@@ -417,7 +419,10 @@ export const loginResultData = {
       writer.uint32(8).int32(message.status);
     }
     if (message.message !== "") {
-      writer.uint32(26).string(message.message);
+      writer.uint32(18).string(message.message);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
     }
     if (message.data !== undefined) {
       dataPayload.encode(message.data, writer.uint32(34).fork()).ldelim();
@@ -439,12 +444,19 @@ export const loginResultData = {
 
           message.status = reader.int32();
           continue;
+        case 2:
+          if (tag !== 18) {
+            break;
+          }
+
+          message.message = reader.string();
+          continue;
         case 3:
           if (tag !== 26) {
             break;
           }
 
-          message.message = reader.string();
+          message.userId = reader.string();
           continue;
         case 4:
           if (tag !== 34) {
@@ -466,6 +478,7 @@ export const loginResultData = {
     return {
       status: isSet(object.status) ? globalThis.Number(object.status) : 0,
       message: isSet(object.message) ? globalThis.String(object.message) : "",
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
       data: isSet(object.data) ? dataPayload.fromJSON(object.data) : undefined,
     };
   },
@@ -477,6 +490,9 @@ export const loginResultData = {
     }
     if (message.message !== "") {
       obj.message = message.message;
+    }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
     }
     if (message.data !== undefined) {
       obj.data = dataPayload.toJSON(message.data);
@@ -491,6 +507,7 @@ export const loginResultData = {
     const message = createBaseloginResultData();
     message.status = object.status ?? 0;
     message.message = object.message ?? "";
+    message.userId = object.userId ?? "";
     message.data = (object.data !== undefined && object.data !== null)
       ? dataPayload.fromPartial(object.data)
       : undefined;
@@ -870,7 +887,7 @@ export const LoginRequest = {
 };
 
 function createBaseLoginResponse(): LoginResponse {
-  return { status: 0, error: [], token: "" };
+  return { status: 0, error: [], token: "", userId: "" };
 }
 
 export const LoginResponse = {
@@ -883,6 +900,9 @@ export const LoginResponse = {
     }
     if (message.token !== "") {
       writer.uint32(26).string(message.token);
+    }
+    if (message.userId !== "") {
+      writer.uint32(34).string(message.userId);
     }
     return writer;
   },
@@ -915,6 +935,13 @@ export const LoginResponse = {
 
           message.token = reader.string();
           continue;
+        case 4:
+          if (tag !== 34) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -929,6 +956,7 @@ export const LoginResponse = {
       status: isSet(object.status) ? globalThis.Number(object.status) : 0,
       error: globalThis.Array.isArray(object?.error) ? object.error.map((e: any) => globalThis.String(e)) : [],
       token: isSet(object.token) ? globalThis.String(object.token) : "",
+      userId: isSet(object.userId) ? globalThis.String(object.userId) : "",
     };
   },
 
@@ -943,6 +971,9 @@ export const LoginResponse = {
     if (message.token !== "") {
       obj.token = message.token;
     }
+    if (message.userId !== "") {
+      obj.userId = message.userId;
+    }
     return obj;
   },
 
@@ -954,6 +985,7 @@ export const LoginResponse = {
     message.status = object.status ?? 0;
     message.error = object.error?.map((e) => e) || [];
     message.token = object.token ?? "";
+    message.userId = object.userId ?? "";
     return message;
   },
 };

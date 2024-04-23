@@ -1,14 +1,22 @@
 
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationError, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
+import ValidationExceptions from './app/exceptions/validations.exceptions';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,
     {
       cors: true,
     }
+  );
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors: ValidationError[]) =>
+        new ValidationExceptions(errors),
+    }),
   );
 
   const options = new DocumentBuilder()

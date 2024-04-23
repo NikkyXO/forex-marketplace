@@ -85,6 +85,8 @@ export class LoginUserResponseDto implements loginResultData {
   };
 
   status: HttpStatus;
+
+  userId: string;
 }
 
 export class LoginUserDto implements loginPayload {
@@ -104,6 +106,8 @@ export class LogoutUserResponseDto implements loginResultData{
 
   @ApiProperty({ example: '200' })
   status: number;
+
+  userId: string;
 }
 
 export class ValidateRequestDto {

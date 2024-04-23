@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsString } from "class-validator";
-import { buyASellerProductPayload, createProductPayload, getProductPayload } from "../../assets/order";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { addUserProduct, buyASellerProductPayload, createProductPayload, getProductPayload } from "../../assets/order";
 import { ApiProperty } from "@nestjs/swagger";
+import { Empty } from "google/protobuf/empty";
 
 export class createProductDTO implements createProductPayload {
 
@@ -11,6 +12,7 @@ export class createProductDTO implements createProductPayload {
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsNumber()
   price: number;
 
   @ApiProperty()
@@ -22,17 +24,40 @@ export class createProductDTO implements createProductPayload {
 
 export class GetProductPayloadDto implements getProductPayload {
   @ApiProperty()
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   productId: string;
+
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  title: string;
 }
 
 
-export class MakeOrderDto implements buyASellerProductPayload {
+export class AddProductToUserDto implements addUserProduct {
+  @ApiProperty()
+  @IsNumber()
+  sellingPrice: number;
 
   @ApiProperty()
-  @IsNotEmpty()
+  productId: string;
+
+  @ApiProperty()
   userId: string;
+
+  @ApiProperty()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty()
+  productVisibility: boolean;
+
+
+}
+
+export class MakeOrderDto implements buyASellerProductPayload {
 
   @ApiProperty()
   @IsNotEmpty()
@@ -41,6 +66,7 @@ export class MakeOrderDto implements buyASellerProductPayload {
 
   @ApiProperty()
   @IsNotEmpty()
+  @IsNumber()
   quantity: number;
 
   @ApiProperty()
@@ -53,4 +79,13 @@ export class MakeOrderDto implements buyASellerProductPayload {
   @IsNotEmpty()
   @IsString()
   toCurrency: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  buyingUserId: string;
+}
+
+export class AllProductsDto implements Empty {
+
 }
