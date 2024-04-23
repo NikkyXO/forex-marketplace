@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
     transport: Transport.GRPC,
     options: {
-      url: '127.0.0.1:3333',
+      url: 'order:3333', // '127.0.0.1:3333',
       package: 'order',
       protoPath: path.join(__dirname, './assets/order.proto'),
 

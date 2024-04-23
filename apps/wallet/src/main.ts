@@ -11,7 +11,7 @@ async function bootstrap() {
     options: {
       package: 'wallet',
       protoPath: path.join(__dirname, './assets/wallet.proto'),
-      url: '127.0.0.1:3335',
+      url: 'wallet:3335' // '127.0.0.1:3335',
     },
    });
    await app.listen();

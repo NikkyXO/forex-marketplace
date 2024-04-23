@@ -11,7 +11,7 @@ async function bootstrap() {
     options: {
       package: 'auth',
       protoPath: path.join(__dirname, './assets/auth.proto'),
-      url: '127.0.0.1:3332',
+      url: 'auth-api:3332' // '127.0.0.1:3332',
     },
    });
     await app.listen();

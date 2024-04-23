@@ -21,7 +21,7 @@ import { Item } from './entiities/item.entity';
         name: 'wallet',
         transport: Transport.GRPC,
         options: {
-          url: "127.0.0.1:3335",
+          url: 'order:3335', // "127.0.0.1:3335",
           package: 'wallet',
           protoPath: path.join(__dirname, '/assets/wallet.proto'),
         },

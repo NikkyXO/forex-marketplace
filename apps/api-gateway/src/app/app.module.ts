@@ -25,7 +25,7 @@ import { GRPCProductController } from './order/app-product.controller';
         name: 'wallet',
         transport: Transport.GRPC,
         options: {
-          url: "127.0.0.1:3335",
+          url: 'wallet:3335', //"127.0.0.1:3335",
           package: 'wallet',
           protoPath: path.join(__dirname, '/assets/wallet.proto'),
         },
@@ -34,7 +34,7 @@ import { GRPCProductController } from './order/app-product.controller';
         name: 'auth',
         transport: Transport.GRPC,
         options: {
-          url: "127.0.0.1:3332",
+          url: 'auth-api:3332', // "127.0.0.1:3332",
           package: 'auth',
           protoPath: path.join(__dirname, '/assets/auth.proto'),
 
@@ -44,7 +44,7 @@ import { GRPCProductController } from './order/app-product.controller';
         name: 'order',
         transport: Transport.GRPC,
         options: {
-          url: "127.0.0.1:3333",
+          url: 'order:3333', // "127.0.0.1:3333",
           package: 'order',
           protoPath: path.join(__dirname, '/assets/order.proto'),
         },
